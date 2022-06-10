@@ -1,4 +1,4 @@
-# Check your Balance in admin account
+# Check your Balance
 
 1. Find out your principal id:
 
