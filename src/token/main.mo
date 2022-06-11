@@ -8,11 +8,14 @@ actor Token {
      var totalSupply : Nat = 1000000000;
      var symbol : Text = "DVOR";
 
+     private stable var balanceEntries: [(Principal, Nat)] = [];
+
      // prinicpal is the key and nat is the value that we are going to store.
      //(1, Principal.equal, Principal.hash) 1 is the inital size of the array, Principal.equal checks for the principal in the hash map, Principal.hash hashes the principal before storing.
-     var balances = HashMap.HashMap<Principal, Nat>(1, Principal.equal, Principal.hash);
-
-     balances.put(owner, totalSupply);
+     private var balances = HashMap.HashMap<Principal, Nat>(1, Principal.equal, Principal.hash);
+     if(balances.size() < 1){    
+          balances.put(owner, totalSupply);
+     }
 
      public query func balanceOf(id: Principal): async Nat {
 
@@ -54,6 +57,16 @@ actor Token {
           }else {
                return "Insufficient Funds";
           }
+     };
 
+     system func preupgrade() {
+          balanceEntries := Iter.toArray(balances.entries());
+     };
+
+     system func postupgrade(){
+          balances := HashMap.fromIter<Principal, Nat>(balanceEntries.val(), 1, Principal.equal, Principal.hash);
+          if(balances.size() < 1){    
+               balances.put(owner, totalSupply);
+          }
      };
 };
